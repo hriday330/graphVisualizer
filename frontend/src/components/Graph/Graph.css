@@ -1,0 +1,11 @@
+.node {
+    fill: blue;
+  }
+  
+  .node.selected, .node.hovered{
+    fill: red;
+  }
+  
+  .node.hovered {
+    fill: teal; 
+  }

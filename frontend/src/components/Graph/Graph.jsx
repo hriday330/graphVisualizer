@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
+import './Graph.css';
 
 function Graph() {
   const [nodes, setNodes] = useState([]);
@@ -11,6 +12,7 @@ function Graph() {
   const addNode = () => {
     const newNode = { id: nodes.length.toString(), x: 50, y: 50 };
     setNodes([...nodes, newNode]);
+    setSelectedNode(null);
   };
 
   const addEdge = (source, target) => {
@@ -19,7 +21,6 @@ function Graph() {
   };
 
   const handleAddEdge = () => {
-    // then await two consecutive nodes to be selected - handled by handleNodeClick
     setSelectedNode(null);
   };
 
@@ -28,7 +29,7 @@ function Graph() {
       addEdge(selectedNode, node);
       setSelectedNode(null);
     } else {
-      setSelectedNode(node);
+      setSelectedNode(node === selectedNode ? null : node);
     }
   };
 
@@ -79,7 +80,7 @@ function Graph() {
       .attr('stroke-opacity', 0.6);
 
     // Draw nodes
-    svg.selectAll('.node')
+    const nodeEnter = svg.selectAll('.node')
       .data(nodes)
       .enter()
       .append('circle')
@@ -89,6 +90,16 @@ function Graph() {
       .attr('cursor', 'pointer')
       .on('click', (event, d) => handleNodeClick(d))
       .call(drag);
+
+    nodeEnter.merge(svg.selectAll('.node'))
+      .classed('selected', (d) => d === selectedNode);
+
+    // change colour while hovering
+    nodeEnter.on('mouseover', function onMouseOver() {
+      d3.select(this).classed('hovered', true);
+    }).on('mouseout', function onMouseOut() {
+      d3.select(this).classed('hovered', false);
+    });
   }, [nodes, links, selectedNode]);
 
   return (
