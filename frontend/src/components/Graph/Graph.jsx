@@ -1,7 +1,6 @@
 /* eslint-disable no-param-reassign */
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import './Graph.css';
 
 function Graph() {
   const [nodes, setNodes] = useState([]);
@@ -86,27 +85,28 @@ function Graph() {
       .append('circle')
       .attr('class', 'node')
       .attr('r', 10)
-      .attr('fill', 'blue')
+      .attr('fill', (d) => (selectedNode === d ? 'yellow' : 'blue'))
       .attr('cursor', 'pointer')
       .on('click', (event, d) => handleNodeClick(d))
       .call(drag);
 
-    nodeEnter.merge(svg.selectAll('.node'))
-      .classed('selected', (d) => d === selectedNode);
-
-    // change colour while hovering
+    // Add hover effect
     nodeEnter.on('mouseover', function onMouseOver() {
-      d3.select(this).classed('hovered', true);
+      d3.select(this).attr('fill', 'red');
     }).on('mouseout', function onMouseOut() {
-      d3.select(this).classed('hovered', false);
+      d3.select(this).attr('fill', (d) => (selectedNode === d ? 'red' : 'blue'));
     });
   }, [nodes, links, selectedNode]);
 
   return (
-    <div>
-      <button type="submit" onClick={addNode}>Add Node</button>
-      <button type="submit" onClick={handleAddEdge}>Add Edge</button>
-      <svg ref={svgRef} width={400} height={400} style={{ border: '1px solid black' }} />
+    <div className="flex flex-col items-center justify-center h-screen">
+      <div className="h-[70vh] w-full max-w-screen-lg">
+        <div className="flex justify-center mb-4">
+          <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full border border-blue-500 hover:border-blue-600 focus:outline-none focus:shadow-outline" type="submit" onClick={addNode}>Add Node</button>
+          <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full border border-green-500 hover:border-green-600 focus:outline-none focus:shadow-outline" type="submit" onClick={handleAddEdge}>Add Edge</button>
+        </div>
+        <svg ref={svgRef} className="w-full h-full bg-gray-100 rounded-lg border-2 border-solid border-gray-500" />
+      </div>
     </div>
   );
 }
