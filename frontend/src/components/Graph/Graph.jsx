@@ -1,15 +1,22 @@
 /* eslint-disable no-param-reassign */
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
+import getRandomInt from '../../util';
+
+const INIT_MIN_DIMENSION = 300;
+const INIT_MAX_DIMENSION = 500;
 
 function Graph() {
   const [nodes, setNodes] = useState([]);
   const [links, setLinks] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
   const svgRef = useRef();
-
   const addNode = () => {
-    const newNode = { id: nodes.length.toString(), x: 50, y: 50 };
+    const newNode = {
+      id: nodes.length.toString(),
+      x: getRandomInt(INIT_MIN_DIMENSION, INIT_MAX_DIMENSION),
+      y: getRandomInt(INIT_MIN_DIMENSION, INIT_MAX_DIMENSION),
+    };
     setNodes([...nodes, newNode]);
     setSelectedNode(null);
   };
@@ -38,8 +45,7 @@ function Graph() {
     svg.selectAll('*').remove();
 
     const simulation = d3.forceSimulation(nodes)
-      .force('charge', d3.forceManyBody().strength(-50))
-      .force('center', d3.forceCenter(200, 200))
+      .force('charge', d3.forceManyBody().strength(-20))
       .force('link', d3.forceLink(links).distance(50))
       .on('tick', () => {
         svg.selectAll('.link')
@@ -51,6 +57,11 @@ function Graph() {
         svg.selectAll('.node')
           .attr('cx', (d) => d.x)
           .attr('cy', (d) => d.y);
+
+        // Update node text positions
+        svg.selectAll('.node-text')
+          .attr('x', (d) => d.x)
+          .attr('y', (d) => d.y);
       });
 
     const drag = d3.drag()
@@ -84,11 +95,22 @@ function Graph() {
       .enter()
       .append('circle')
       .attr('class', 'node')
-      .attr('r', 10)
+      .attr('r', 15) // Increase node radius
       .attr('fill', (d) => (selectedNode === d ? 'yellow' : 'blue'))
       .attr('cursor', 'pointer')
       .on('click', (event, d) => handleNodeClick(d))
       .call(drag);
+
+    // Add node numbers inside nodes
+    svg.selectAll('.node-text')
+      .data(nodes)
+      .enter()
+      .append('text')
+      .attr('class', 'node-text')
+      .attr('text-anchor', 'middle')
+      .attr('fill', 'white')
+      .attr('alignment-baseline', 'middle')
+      .text((d) => d.id);
 
     // Add hover effect
     nodeEnter.on('mouseover', function onMouseOver() {
@@ -105,7 +127,7 @@ function Graph() {
           <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full border border-blue-500 hover:border-blue-600 focus:outline-none focus:shadow-outline" type="submit" onClick={addNode}>Add Node</button>
           <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full border border-green-500 hover:border-green-600 focus:outline-none focus:shadow-outline" type="submit" onClick={handleAddEdge}>Add Edge</button>
         </div>
-        <svg ref={svgRef} className="w-full h-full bg-gray-100 rounded-lg border-2 border-solid border-gray-500" />
+        <svg ref={svgRef} className="w-full h-full bg-gray-100 rounded-lg border-2 border-solid border-gray-500 " />
       </div>
     </div>
   );
