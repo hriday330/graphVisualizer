@@ -1,8 +1,16 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-param-reassign */
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import { Button } from '@mui/material';
+import {
+  Button,
+} from '@mui/material';
+import { Dropdown } from '@mui/base/Dropdown';
+import { MenuButton } from '@mui/base/MenuButton';
+import { Menu } from '@mui/base/Menu';
+import { MenuItem } from '@mui/base/MenuItem';
 import getRandomInt from '../../util';
+import graphAlgorithms from '../../algorithms/graphAlgorithms';
 
 const INIT_MIN_DIMENSION = 300;
 const INIT_MAX_DIMENSION = 500;
@@ -11,6 +19,9 @@ function Graph() {
   const [nodes, setNodes] = useState([]);
   const [links, setLinks] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
+  const [algorithm, setAlgorithm] = useState(null);
+  const [visitedNodes, setVisitedNodes] = useState(new Set());
+
   const svgRef = useRef();
   const addNode = () => {
     const newNode = {
@@ -127,6 +138,16 @@ function Graph() {
         <div className="flex justify-center mb-4">
           <Button onClick={addNode}> Add Node </Button>
           <Button variant="contained" onclick={handleAddEdge}> Add Edge </Button>
+          <Dropdown className="relative">
+            <MenuButton className="px-4 py-2 text-blue-500 rounded-md shadow-md cursor-pointer focus:outline-none focus:ring focus:ring-blue-300">
+              Algorithm
+            </MenuButton>
+            <Menu className="absolute top-full left-0 w-48 bg-white border border-gray-300 rounded-md shadow-md">
+              {graphAlgorithms.map((algo) => (
+                <MenuItem className="px-4 py-2 hover:bg-gray-100">{algo.name}</MenuItem>
+              ))}
+            </Menu>
+          </Dropdown>
         </div>
         <svg ref={svgRef} className="w-full h-full bg-gray-100 rounded-lg border-2 border-solid border-gray-500 " />
       </div>
