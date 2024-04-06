@@ -9,8 +9,12 @@ const runDFS = (nodes, links, setVisitedNodes) => {
 };
 
 const graphAlgorithms = [
-  { name: 'Breadth-First Search', description: 'Traverse the graph using BFS', action: runBFS },
-  { name: 'Depth-First Search', description: 'Traverse the graph using DFS', action: runDFS },
+  {
+    name: 'Breadth-First Search', id: 1, description: 'Traverse the graph using BFS', action: runBFS,
+  },
+  {
+    name: 'Depth-First Search', id: 2, description: 'Traverse the graph using DFS', action: runDFS,
+  },
   // Add more graph algorithms here
 ];
 

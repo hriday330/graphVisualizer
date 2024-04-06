@@ -5,12 +5,9 @@ import * as d3 from 'd3';
 import {
   Button,
 } from '@mui/material';
-import { Dropdown } from '@mui/base/Dropdown';
-import { MenuButton } from '@mui/base/MenuButton';
-import { Menu } from '@mui/base/Menu';
-import { MenuItem } from '@mui/base/MenuItem';
 import getRandomInt from '../../util';
 import graphAlgorithms from '../../algorithms/graphAlgorithms';
+import SplitButton from '../SplitButton/SplitButton';
 
 const INIT_MIN_DIMENSION = 300;
 const INIT_MAX_DIMENSION = 500;
@@ -51,6 +48,12 @@ function Graph() {
     }
   };
 
+  const handleRunAlgorithm = (selectedOption) => {
+    setAlgorithm(selectedOption);
+    setVisitedNodes([]); // clear past execution;
+    selectedOption.action(nodes, links, setVisitedNodes);
+  };
+
   useEffect(() => {
     const svg = d3.select(svgRef.current);
 
@@ -70,7 +73,6 @@ function Graph() {
           .attr('cx', (d) => d.x)
           .attr('cy', (d) => d.y);
 
-        // Update node text positions
         svg.selectAll('.node-text')
           .attr('x', (d) => d.x)
           .attr('y', (d) => d.y);
@@ -92,7 +94,6 @@ function Graph() {
         event.subject.fy = null;
       });
 
-    // Draw links
     svg.selectAll('.link')
       .data(links)
       .enter()
@@ -101,19 +102,17 @@ function Graph() {
       .attr('stroke', '#999')
       .attr('stroke-opacity', 0.6);
 
-    // Draw nodes
     const nodeEnter = svg.selectAll('.node')
       .data(nodes)
       .enter()
       .append('circle')
       .attr('class', 'node')
-      .attr('r', 15) // Increase node radius
+      .attr('r', 15) // TODO: extract into constant
       .attr('fill', (d) => (selectedNode === d ? 'yellow' : 'blue'))
       .attr('cursor', 'pointer')
       .on('click', (event, d) => handleNodeClick(d))
       .call(drag);
 
-    // Add node numbers inside nodes
     svg.selectAll('.node-text')
       .data(nodes)
       .enter()
@@ -124,7 +123,7 @@ function Graph() {
       .attr('alignment-baseline', 'middle')
       .text((d) => d.id);
 
-    // Add hover effect
+    // Handle hover
     nodeEnter.on('mouseover', function onMouseOver() {
       d3.select(this).attr('fill', 'red');
     }).on('mouseout', function onMouseOut() {
@@ -138,16 +137,11 @@ function Graph() {
         <div className="flex justify-center mb-4">
           <Button onClick={addNode}> Add Node </Button>
           <Button variant="contained" onclick={handleAddEdge}> Add Edge </Button>
-          <Dropdown className="relative">
-            <MenuButton className="px-4 py-2 text-blue-500 rounded-md shadow-md cursor-pointer focus:outline-none focus:ring focus:ring-blue-300">
-              Algorithm
-            </MenuButton>
-            <Menu className="absolute top-full left-0 w-48 bg-white border border-gray-300 rounded-md shadow-md">
-              {graphAlgorithms.map((algo) => (
-                <MenuItem className="px-4 py-2 hover:bg-gray-100">{algo.name}</MenuItem>
-              ))}
-            </Menu>
-          </Dropdown>
+          <SplitButton
+            selectedOption={algorithm}
+            options={graphAlgorithms}
+            onClick={handleRunAlgorithm}
+          />
         </div>
         <svg ref={svgRef} className="w-full h-full bg-gray-100 rounded-lg border-2 border-solid border-gray-500 " />
       </div>
