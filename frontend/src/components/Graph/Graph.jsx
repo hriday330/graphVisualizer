@@ -50,7 +50,7 @@ function Graph() {
 
   const handleRunAlgorithm = (selectedOption) => {
     setAlgorithm(selectedOption);
-    setVisitedNodes([]); // clear past execution;
+    setVisitedNodes((prevVisited) => new Set()); // clear past execution;
     selectedOption.action(nodes, links, setVisitedNodes);
   };
 
@@ -108,7 +108,7 @@ function Graph() {
       .append('circle')
       .attr('class', 'node')
       .attr('r', 15) // TODO: extract into constant
-      .attr('fill', (d) => (selectedNode === d ? 'yellow' : 'blue'))
+      .attr('fill', (d) => (visitedNodes.has(d) ? 'green' : 'blue')) // Update fill based on visitedNodes
       .attr('cursor', 'pointer')
       .on('click', (event, d) => handleNodeClick(d))
       .call(drag);
@@ -129,14 +129,14 @@ function Graph() {
     }).on('mouseout', function onMouseOut() {
       d3.select(this).attr('fill', (d) => (selectedNode === d ? 'red' : 'blue'));
     });
-  }, [nodes, links, selectedNode]);
+  }, [nodes, links, selectedNode, visitedNodes]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <div className="h-[70vh] w-full max-w-screen-lg">
         <div className="flex justify-center mb-4">
           <Button onClick={addNode}> Add Node </Button>
-          <Button variant="contained" onclick={handleAddEdge}> Add Edge </Button>
+          <Button variant="contained" onClick={handleAddEdge}> Add Edge </Button>
           <SplitButton
             selectedOption={algorithm}
             options={graphAlgorithms}
