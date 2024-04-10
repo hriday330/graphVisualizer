@@ -22,7 +22,7 @@ const computeNeighbors = (edges) => {
   return neighbors;
 };
 
-const runBFS = async (nodes, links, setVisitedNodes, delay = 250) => {
+const runBFS = async (nodes, links, setVisitedNodes, delay = 500) => {
   const visited = new Set();
   const queue = [];
 
@@ -46,7 +46,7 @@ const runBFS = async (nodes, links, setVisitedNodes, delay = 250) => {
   }
 };
 
-const runDFS = async (nodes, links, setVisitedNodes, delay = 250) => {
+const runDFS = async (nodes, links, setVisitedNodes, delay = 500) => {
   const visited = new Set();
   const neighbors = computeNeighbors(links);
   const stack = [];
