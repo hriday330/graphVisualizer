@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/hriday330/graphVisualizer/issues"
   },
-  "homepage": "https://github.com/hriday330/graphVisualizer#readme"
+  "homepage": "https://github.com/hriday330/graphVisualizer#readme",
+  "dependencies": {
+    "@mui/styles": "^5.15.15"
+  }
 }

@@ -1,7 +1,13 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-param-reassign */
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import getRandomInt from '../../util';
+import {
+  Button,
+} from '@mui/material';
+import { getRandomInt } from '../../util';
+import graphAlgorithms from '../../algorithms/graphAlgorithms';
+import SplitButton from '../SplitButton/SplitButton';
 
 const INIT_MIN_DIMENSION = 300;
 const INIT_MAX_DIMENSION = 500;
@@ -10,6 +16,9 @@ function Graph() {
   const [nodes, setNodes] = useState([]);
   const [links, setLinks] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
+  const [algorithm, setAlgorithm] = useState(null);
+  const [visitedNodes, setVisitedNodes] = useState(new Set());
+
   const svgRef = useRef();
   const addNode = () => {
     const newNode = {
@@ -39,6 +48,12 @@ function Graph() {
     }
   };
 
+  const handleRunAlgorithm = (selectedOption) => {
+    setAlgorithm(selectedOption);
+    setVisitedNodes((prevVisited) => new Set()); // clear past execution;
+    selectedOption.action(nodes, links, setVisitedNodes);
+  };
+
   useEffect(() => {
     const svg = d3.select(svgRef.current);
 
@@ -58,7 +73,6 @@ function Graph() {
           .attr('cx', (d) => d.x)
           .attr('cy', (d) => d.y);
 
-        // Update node text positions
         svg.selectAll('.node-text')
           .attr('x', (d) => d.x)
           .attr('y', (d) => d.y);
@@ -80,7 +94,6 @@ function Graph() {
         event.subject.fy = null;
       });
 
-    // Draw links
     svg.selectAll('.link')
       .data(links)
       .enter()
@@ -89,19 +102,17 @@ function Graph() {
       .attr('stroke', '#999')
       .attr('stroke-opacity', 0.6);
 
-    // Draw nodes
     const nodeEnter = svg.selectAll('.node')
       .data(nodes)
       .enter()
       .append('circle')
       .attr('class', 'node')
-      .attr('r', 15) // Increase node radius
-      .attr('fill', (d) => (selectedNode === d ? 'yellow' : 'blue'))
+      .attr('r', 15) // TODO: extract into constant
+      .attr('fill', (d) => (visitedNodes.has(d) ? 'green' : 'blue')) // Update fill based on visitedNodes
       .attr('cursor', 'pointer')
       .on('click', (event, d) => handleNodeClick(d))
       .call(drag);
 
-    // Add node numbers inside nodes
     svg.selectAll('.node-text')
       .data(nodes)
       .enter()
@@ -112,20 +123,25 @@ function Graph() {
       .attr('alignment-baseline', 'middle')
       .text((d) => d.id);
 
-    // Add hover effect
+    // Handle hover
     nodeEnter.on('mouseover', function onMouseOver() {
       d3.select(this).attr('fill', 'red');
     }).on('mouseout', function onMouseOut() {
       d3.select(this).attr('fill', (d) => (selectedNode === d ? 'red' : 'blue'));
     });
-  }, [nodes, links, selectedNode]);
+  }, [nodes, links, selectedNode, visitedNodes]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <div className="h-[70vh] w-full max-w-screen-lg">
         <div className="flex justify-center mb-4">
-          <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full border border-blue-500 hover:border-blue-600 focus:outline-none focus:shadow-outline" type="submit" onClick={addNode}>Add Node</button>
-          <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full border border-green-500 hover:border-green-600 focus:outline-none focus:shadow-outline" type="submit" onClick={handleAddEdge}>Add Edge</button>
+          <Button onClick={addNode}> Add Node </Button>
+          <Button variant="contained" onClick={handleAddEdge}> Add Edge </Button>
+          <SplitButton
+            selectedOption={algorithm}
+            options={graphAlgorithms}
+            onClick={handleRunAlgorithm}
+          />
         </div>
         <svg ref={svgRef} className="w-full h-full bg-gray-100 rounded-lg border-2 border-solid border-gray-500 " />
       </div>
