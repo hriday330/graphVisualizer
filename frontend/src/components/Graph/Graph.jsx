@@ -5,7 +5,7 @@ import * as d3 from 'd3';
 import {
   Button,
 } from '@mui/material';
-import getRandomInt from '../../util';
+import { getRandomInt } from '../../util';
 import graphAlgorithms from '../../algorithms/graphAlgorithms';
 import SplitButton from '../SplitButton/SplitButton';
 

@@ -1,44 +1,70 @@
-const runBFS = (nodes, links, setVisitedNodes) => {
+import { sleep } from '../util';
+// eslint-disable-next-line no-unused-vars
+
+const computeNeighbors = (edges) => {
+  const neighbors = {};
+  edges.forEach((edge) => {
+    const endPoint1 = edge.source.index;
+    const endPoint2 = edge.target.index;
+    if (!neighbors[endPoint1]) {
+      neighbors[endPoint1] = [edge.target];
+    } else {
+      neighbors[endPoint1] = [...neighbors[endPoint1], edge.target];
+    }
+
+    if (!neighbors[endPoint2]) {
+      neighbors[endPoint2] = [edge.source];
+    } else {
+      neighbors[endPoint2] = [...neighbors[endPoint2], edge.source];
+    }
+  });
+
+  return neighbors;
+};
+
+const runBFS = async (nodes, links, setVisitedNodes, delay = 250) => {
   const visited = new Set();
   const queue = [];
 
   const startNode = nodes[0];
   queue.push(startNode);
   visited.add(startNode);
+  const neighbors = computeNeighbors(links);
 
   while (queue.length > 0) {
     const currentNode = queue.shift();
+    // eslint-disable-next-line no-await-in-loop
+    await sleep(delay);
     visited.add(currentNode);
-    setVisitedNodes(visited);
-    const neighbors = links.filter((link) => (link.source === currentNode))
-      .map((link) => link.target);
-    neighbors.forEach((neighbor) => {
+    setVisitedNodes((prevVisitedNodes) => (new Set([...prevVisitedNodes, currentNode])));
+    const currentNeighbors = neighbors[currentNode.index];
+    currentNeighbors.forEach((neighbor) => {
       if (!visited.has(neighbor)) {
         queue.push(neighbor);
-        visited.add(neighbor);
       }
     });
   }
 };
 
-const runDFS = (nodes, links, setVisitedNodes) => {
+const runDFS = async (nodes, links, setVisitedNodes, delay = 250) => {
   const visited = new Set();
-  // DFS helper
-  const dfsHelper = (currentNode) => {
-    setVisitedNodes((prevVisitedNodes) => new Set([...prevVisitedNodes, currentNode]));
+  const neighbors = computeNeighbors(links);
+  const stack = [];
+  const startNode = nodes[0];
+  stack.push(startNode);
+  while (stack.length > 0) {
+    const currentNode = stack.pop();
+    // eslint-disable-next-line no-await-in-loop
+    await sleep(delay);
     visited.add(currentNode);
-    const neighbors = links.filter((link) => link.source === currentNode)
-      .map((link) => link.target);
-    neighbors.forEach((neighbor) => {
+    setVisitedNodes((prevVisitedNodes) => (new Set([...prevVisitedNodes, currentNode])));
+    const currentNeighbors = neighbors[currentNode.index];
+    currentNeighbors.forEach((neighbor) => {
       if (!visited.has(neighbor)) {
-        dfsHelper(neighbor);
+        stack.push(neighbor);
       }
     });
-  };
-
-  const startNode = nodes[0];
-
-  dfsHelper(startNode);
+  }
 };
 
 const graphAlgorithms = [
