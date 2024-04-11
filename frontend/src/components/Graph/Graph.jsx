@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import {
-  Button,
+  Button, Checkbox, Typography,
 } from '@mui/material';
 import { getRandomInt } from '../../util';
 import graphAlgorithms from '../../algorithms/graphAlgorithms';
@@ -11,13 +11,13 @@ import SplitButton from '../SplitButton/SplitButton';
 
 const INIT_MIN_DIMENSION = 300;
 const INIT_MAX_DIMENSION = 500;
-
 function Graph() {
   const [nodes, setNodes] = useState([]);
   const [links, setLinks] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
-  const [algorithm, setAlgorithm] = useState(null);
+  const [algorithm, setAlgorithm] = useState(graphAlgorithms[0]);
   const [visitedNodes, setVisitedNodes] = useState(new Set());
+  const [directed, setDirected] = useState(true);
 
   const svgRef = useRef();
   const addNode = () => {
@@ -51,13 +51,26 @@ function Graph() {
   const handleRunAlgorithm = (selectedOption) => {
     setAlgorithm(selectedOption);
     setVisitedNodes((prevVisited) => new Set()); // clear past execution;
-    selectedOption.action(nodes, links, setVisitedNodes, setLinks);
+    selectedOption.action(nodes, links, setVisitedNodes, setLinks, directed);
   };
 
   useEffect(() => {
     const svg = d3.select(svgRef.current);
 
     svg.selectAll('*').remove();
+
+    svg.append('defs').append('marker')
+      .attr('id', 'arrowhead')
+      .attr('viewBox', '-0 -5 10 10')
+      .attr('refX', 15)
+      .attr('refY', 0)
+      .attr('orient', 'auto')
+      .attr('markerWidth', 13)
+      .attr('markerHeight', 13)
+      .attr('xoverflow', 'visible')
+      .append('svg:path')
+      .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+      .attr('fill', '#999');
 
     const simulation = d3.forceSimulation(nodes)
       .force('charge', d3.forceManyBody().strength(-20))
@@ -102,6 +115,7 @@ function Graph() {
       .attr('stroke', (d) => (d.visited ? 'red' : '#999'))
       .attr('stroke-opacity', (d) => (d.visited ? 1 : 0.6));
 
+    if (directed) svg.selectAll('.link').attr('marker-end', 'url(#arrowhead)'); // Add arrowhead marker
     const nodeEnter = svg.selectAll('.node')
       .data(nodes)
       .enter()
@@ -122,26 +136,42 @@ function Graph() {
       .attr('fill', 'white')
       .attr('alignment-baseline', 'middle')
       .text((d) => d.id);
-
     // Handle hover
     nodeEnter.on('mouseover', function onMouseOver() {
       d3.select(this).attr('fill', 'red');
     }).on('mouseout', function onMouseOut() {
       d3.select(this).attr('fill', (d) => (selectedNode === d ? 'red' : 'blue'));
     });
-  }, [nodes, links, selectedNode, visitedNodes]);
-
+  }, [nodes, links, selectedNode, visitedNodes, directed]);
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <div className="h-[70vh] w-full max-w-screen-lg">
         <div className="flex justify-center mb-4">
-          <Button onClick={addNode}> Add Node </Button>
+          <Button
+            onClick={addNode}
+            className="shadow-md"
+          >
+            {' '}
+            Add Node
+          </Button>
           <Button variant="contained" onClick={handleAddEdge}> Add Edge </Button>
           <SplitButton
             selectedOption={algorithm}
             options={graphAlgorithms}
             onClick={handleRunAlgorithm}
           />
+          <Typography
+            sx={{ fontSize: '14px' }}
+            className="px-4 py-2 text-white bg-gray-400 rounded-l-md shadow-md cursor-pointer focus:outline-none focus:ring focus:ring-blue-300"
+          >
+            <Checkbox
+              checked={directed}
+              onChange={(e) => setDirected(e.target.checked)}
+              color="default"
+            />
+            DIRECTED
+          </Typography>
+
         </div>
         <svg ref={svgRef} className="w-full h-full bg-gray-100 rounded-lg border-2 border-solid border-gray-500 " />
       </div>

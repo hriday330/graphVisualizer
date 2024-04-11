@@ -3,7 +3,9 @@ import PropTypes from 'prop-types';
 import { Button, Menu, MenuItem } from '@mui/material';
 import graphAlgorithms from '../../algorithms/graphAlgorithms';
 
-function SplitButton({ selectedOption, options, onClick }) {
+function SplitButton({
+  selectedOption, options, onClick, contained,
+}) {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleButtonClick = () => {
@@ -26,10 +28,11 @@ function SplitButton({ selectedOption, options, onClick }) {
   return (
     <>
       <Button
+        variant={contained ? 'contained' : 'text'}
         aria-controls="split-button-menu"
         aria-haspopup="true"
         onClick={handleButtonClick}
-        className="px-4 py-2 text-blue-500 rounded-l-md shadow-md cursor-pointer focus:outline-none focus:ring focus:ring-blue-300"
+        className="px-4 py-2 rounded-l-md shadow-md cursor-pointer focus:outline-none focus:ring focus:ring-blue-300"
       >
         {selectedOption ? selectedOption.name : 'Select Algorithm'}
       </Button>
@@ -68,6 +71,7 @@ SplitButton.propTypes = {
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     name: PropTypes.string.isRequired,
   }),
+  contained: PropTypes.bool,
   options: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
@@ -79,5 +83,6 @@ SplitButton.propTypes = {
 
 SplitButton.defaultProps = {
   selectedOption: graphAlgorithms[0],
+  contained: false,
 };
 export default SplitButton;

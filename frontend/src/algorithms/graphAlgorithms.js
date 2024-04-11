@@ -1,16 +1,20 @@
+/* eslint-disable no-continue */
 import { sleep } from '../util';
+
 // eslint-disable-next-line no-unused-vars
-const getUpdatedEdges = (links, parentMap) => links.map((edge) => {
+const getUpdatedEdges = (links, parentMap, isDirected) => links.map((edge) => {
   const sourceVisited = parentMap[edge.target.index] !== undefined
       && parentMap[edge.target.index] === edge.source;
   const targetVisited = parentMap[edge.source.index] !== undefined
       && parentMap[edge.source.index] === edge.target;
-  if (sourceVisited || targetVisited) {
-    return { ...edge, visited: true };
+
+  if (isDirected) {
+    return { ...edge, visited: sourceVisited };
   }
-  return { ...edge, visited: false };
+  return { ...edge, visited: sourceVisited || targetVisited };
 });
-const computeNeighbors = (edges) => {
+
+const computeNeighbors = (edges, isDirected) => {
   const neighbors = {};
   edges.forEach((edge) => {
     const endPoint1 = edge.source.index;
@@ -20,7 +24,8 @@ const computeNeighbors = (edges) => {
     } else {
       neighbors[endPoint1] = [...neighbors[endPoint1], edge.target];
     }
-
+    if (isDirected) return;
+    // only add source as neighbor of target if graph is not directed
     if (!neighbors[endPoint2]) {
       neighbors[endPoint2] = [edge.source];
     } else {
@@ -31,13 +36,13 @@ const computeNeighbors = (edges) => {
   return neighbors;
 };
 
-const runBFS = async (nodes, links, setVisitedNodes, setLinks, delay = 500) => {
+const runBFS = async (nodes, links, setVisitedNodes, setLinks, isDirected = false, delay = 500) => {
   const visited = new Set();
   const queue = [];
   const startNode = nodes[0];
   queue.push(startNode);
   visited.add(startNode);
-  const neighbors = computeNeighbors(links);
+  const neighbors = computeNeighbors(links, isDirected);
   const parentMap = {};
   const clearedEdges = links.map((edge) => ({ ...edge, visited: false }));
   setLinks(clearedEdges);
@@ -48,6 +53,7 @@ const runBFS = async (nodes, links, setVisitedNodes, setLinks, delay = 500) => {
     visited.add(currentNode);
     setVisitedNodes((prevVisitedNodes) => (new Set([...prevVisitedNodes, currentNode])));
     const currentNeighbors = neighbors[currentNode.index];
+    if (!currentNeighbors) continue;
     currentNeighbors.forEach((neighbor) => {
       if (!visited.has(neighbor)) {
         parentMap[neighbor.index] = currentNode;
@@ -57,14 +63,14 @@ const runBFS = async (nodes, links, setVisitedNodes, setLinks, delay = 500) => {
     });
   }
   // mark tree edges from traversal
-  const updatedEdges = getUpdatedEdges(links, parentMap);
+  const updatedEdges = getUpdatedEdges(links, parentMap, isDirected);
 
   setLinks(updatedEdges);
 };
 
-const runDFS = async (nodes, links, setVisitedNodes, setLinks, delay = 500) => {
+const runDFS = async (nodes, links, setVisitedNodes, setLinks, isDirected = false, delay = 500) => {
   const visited = new Set();
-  const neighbors = computeNeighbors(links);
+  const neighbors = computeNeighbors(links, isDirected);
   const stack = [];
   const startNode = nodes[0];
   const parentMap = {};
@@ -78,6 +84,7 @@ const runDFS = async (nodes, links, setVisitedNodes, setLinks, delay = 500) => {
     visited.add(currentNode);
     setVisitedNodes((prevVisitedNodes) => (new Set([...prevVisitedNodes, currentNode])));
     const currentNeighbors = neighbors[currentNode.index];
+    if (!currentNeighbors) continue;
     currentNeighbors.forEach((neighbor) => {
       if (!visited.has(neighbor)) {
         parentMap[neighbor.index] = currentNode;
@@ -86,7 +93,7 @@ const runDFS = async (nodes, links, setVisitedNodes, setLinks, delay = 500) => {
     });
   }
 
-  const updatedEdges = getUpdatedEdges(links, parentMap);
+  const updatedEdges = getUpdatedEdges(links, parentMap, isDirected);
   setLinks(updatedEdges);
 };
 
