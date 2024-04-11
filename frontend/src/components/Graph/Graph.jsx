@@ -31,7 +31,7 @@ function Graph() {
   };
 
   const addEdge = (source, target) => {
-    const newLink = { source, target };
+    const newLink = { source, target, visited: false };
     setLinks((prevLinks) => [...prevLinks, newLink]);
   };
 
@@ -51,7 +51,7 @@ function Graph() {
   const handleRunAlgorithm = (selectedOption) => {
     setAlgorithm(selectedOption);
     setVisitedNodes((prevVisited) => new Set()); // clear past execution;
-    selectedOption.action(nodes, links, setVisitedNodes);
+    selectedOption.action(nodes, links, setVisitedNodes, setLinks);
   };
 
   useEffect(() => {
@@ -99,8 +99,8 @@ function Graph() {
       .enter()
       .append('line')
       .attr('class', 'link')
-      .attr('stroke', '#999')
-      .attr('stroke-opacity', 0.6);
+      .attr('stroke', (d) => (d.visited ? 'red' : '#999'))
+      .attr('stroke-opacity', (d) => (d.visited ? 1 : 0.6));
 
     const nodeEnter = svg.selectAll('.node')
       .data(nodes)
