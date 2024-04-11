@@ -18,6 +18,7 @@ function Graph() {
   const [selectedNode, setSelectedNode] = useState(null);
   const [algorithm, setAlgorithm] = useState(null);
   const [visitedNodes, setVisitedNodes] = useState(new Set());
+  const [directed, setDirected] = useState(true);
 
   const svgRef = useRef();
   const addNode = () => {
@@ -58,6 +59,19 @@ function Graph() {
     const svg = d3.select(svgRef.current);
 
     svg.selectAll('*').remove();
+
+    svg.append('defs').append('marker')
+      .attr('id', 'arrowhead')
+      .attr('viewBox', '-0 -5 10 10')
+      .attr('refX', 15)
+      .attr('refY', 0)
+      .attr('orient', 'auto')
+      .attr('markerWidth', 13)
+      .attr('markerHeight', 13)
+      .attr('xoverflow', 'visible')
+      .append('svg:path')
+      .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+      .attr('fill', '#999');
 
     const simulation = d3.forceSimulation(nodes)
       .force('charge', d3.forceManyBody().strength(-20))
@@ -102,6 +116,7 @@ function Graph() {
       .attr('stroke', (d) => (d.visited ? 'red' : '#999'))
       .attr('stroke-opacity', (d) => (d.visited ? 1 : 0.6));
 
+    if (directed) svg.selectAll('.link').attr('marker-end', 'url(#arrowhead)'); // Add arrowhead marker
     const nodeEnter = svg.selectAll('.node')
       .data(nodes)
       .enter()
@@ -122,7 +137,6 @@ function Graph() {
       .attr('fill', 'white')
       .attr('alignment-baseline', 'middle')
       .text((d) => d.id);
-
     // Handle hover
     nodeEnter.on('mouseover', function onMouseOver() {
       d3.select(this).attr('fill', 'red');
