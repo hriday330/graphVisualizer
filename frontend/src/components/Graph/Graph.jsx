@@ -1,13 +1,16 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-param-reassign */
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import {
-  Button, Checkbox, Typography,
+  Button, Checkbox, Typography, Dialog, DialogTitle,
+  DialogContent, DialogContentText, DialogActions,
 } from '@mui/material';
 import { getRandomInt } from '../../util';
 import graphAlgorithms from '../../algorithms/graphAlgorithms';
 import SplitButton from '../SplitButton/SplitButton';
+import Confirm from '../Confirm/Confirm';
 
 const INIT_MIN_DIMENSION = 300;
 const INIT_MAX_DIMENSION = 500;
@@ -19,6 +22,32 @@ function Graph() {
   const [algorithm, setAlgorithm] = useState(graphAlgorithms[0]);
   const [visitedNodes, setVisitedNodes] = useState(new Set());
   const [directed, setDirected] = useState(true);
+  const [openClearDialog, setOpenClearDialog] = useState(false);
+
+  const handleClear = () => {
+    setOpenClearDialog(true);
+  };
+
+  const handleConfirmClear = () => {
+    setNodes([]);
+    setLinks([]);
+    setSelectedNode(null);
+    setSelectedEdge(null);
+    setVisitedNodes(new Set());
+    setOpenClearDialog(false);
+  };
+
+  const handleCancelClear = () => {
+    setOpenClearDialog(false);
+  };
+
+  const confirmProps = {
+    handleConfirm: handleConfirmClear,
+    handleCancel: handleCancelClear,
+    openDialog: openClearDialog,
+    dialogTitle: 'Clear Graph?',
+    dialogDescr: 'Are you sure you want to clear the graph?',
+  };
 
   const svgRef = useRef();
   const addNode = () => {
@@ -54,10 +83,6 @@ function Graph() {
     setLinks(updatedLinks);
     setSelectedEdge(null);
   };
-
-  const handleClear = () => {
-    //TODO: Implement with alert;
-  }
 
   const handleNodeClick = (node) => {
     if (selectedNode && node.index !== selectedNode.index) {
@@ -209,6 +234,7 @@ function Graph() {
             />
             DIRECTED
           </Typography>
+          <Confirm {...confirmProps} />
 
         </div>
         <svg ref={svgRef} className="w-full h-full bg-gray-100 rounded-lg border-2 border-solid border-gray-500 " />
