@@ -15,6 +15,7 @@ function Graph() {
   const [nodes, setNodes] = useState([]);
   const [links, setLinks] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
+  const [selectedEdge, setSelectedEdge] = useState(null);
   const [algorithm, setAlgorithm] = useState(graphAlgorithms[0]);
   const [visitedNodes, setVisitedNodes] = useState(new Set());
   const [directed, setDirected] = useState(true);
@@ -35,9 +36,28 @@ function Graph() {
     setLinks((prevLinks) => [...prevLinks, newLink]);
   };
 
-  const handleAddEdge = () => {
+  const handleClearNode = () => {
+    const updatedNodes = nodes.filter((node) => node !== selectedNode);
+    const updatedLinks = links.filter((link) => (
+      (link.target !== selectedNode) && (link.source !== selectedNode)));
+    setNodes(updatedNodes);
+    setLinks(updatedLinks);
+    if (selectedEdge
+      && (selectedEdge.source === selectedNode || selectedEdge.target === selectedNode)) {
+      setSelectedEdge(null);
+    }
     setSelectedNode(null);
   };
+
+  const handleClearEdge = () => {
+    const updatedLinks = links.filter((link) => link !== selectedEdge);
+    setLinks(updatedLinks);
+    setSelectedEdge(null);
+  };
+
+  const handleClear = () => {
+    //TODO: Implement with alert;
+  }
 
   const handleNodeClick = (node) => {
     if (selectedNode && node.index !== selectedNode.index) {
@@ -45,6 +65,14 @@ function Graph() {
       setSelectedNode(null);
     } else {
       setSelectedNode(node === selectedNode ? null : node);
+    }
+  };
+
+  const handleEdgeClick = (event, edge) => {
+    if (!selectedEdge) {
+      setSelectedEdge(edge);
+    } else {
+      setSelectedEdge(null);
     }
   };
 
@@ -107,13 +135,14 @@ function Graph() {
         event.subject.fy = null;
       });
 
-    svg.selectAll('.link')
+    const linkEnter = svg.selectAll('.link')
       .data(links)
       .enter()
       .append('line')
       .attr('class', 'link')
-      .attr('stroke', (d) => (d.visited ? 'red' : '#999'))
-      .attr('stroke-opacity', (d) => (d.visited ? 1 : 0.6));
+      .attr('stroke', (d) => (d.visited ? 'green' : '#999'))
+      .on('click', (event, d) => handleEdgeClick(event, d))
+      .attr('stroke-opacity', (d) => (d.visited ? 3 : 1.5));
 
     if (directed) svg.selectAll('.link').attr('marker-end', 'url(#arrowhead)'); // Add arrowhead marker
     const nodeEnter = svg.selectAll('.node')
@@ -135,14 +164,20 @@ function Graph() {
       .attr('text-anchor', 'middle')
       .attr('fill', 'white')
       .attr('alignment-baseline', 'middle')
-      .text((d) => d.id);
+      .text((d) => `${d.index}`);
     // Handle hover
     nodeEnter.on('mouseover', function onMouseOver() {
       d3.select(this).attr('fill', 'red');
     }).on('mouseout', function onMouseOut() {
       d3.select(this).attr('fill', (d) => (selectedNode === d ? 'red' : 'blue'));
     });
-  }, [nodes, links, selectedNode, visitedNodes, directed]);
+
+    linkEnter.on('mouseover', function onMouseOver() {
+      d3.select(this).attr('stroke', 'red');
+    }).on('mouseout', function onMouseOut() {
+      d3.select(this).attr('stroke', (d) => (selectedEdge === d ? 'red' : '#999'));
+    });
+  }, [nodes, links, selectedNode, selectedEdge, visitedNodes, directed]);
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <div className="h-[70vh] w-full max-w-screen-lg">
@@ -154,11 +189,14 @@ function Graph() {
             {' '}
             Add Node
           </Button>
-          <Button variant="contained" onClick={handleAddEdge}> Add Edge </Button>
+          <Button variant="contained" disabled={!selectedNode} onClick={handleClearNode}> Delete Node </Button>
+          <Button onClick={handleClearEdge} disabled={!selectedEdge} className="shadow-md"> Delete Edge </Button>
+          <Button variant="contained" onClick={handleClear}> Clear</Button>
           <SplitButton
             selectedOption={algorithm}
             options={graphAlgorithms}
             onClick={handleRunAlgorithm}
+            contained
           />
           <Typography
             sx={{ fontSize: '14px' }}

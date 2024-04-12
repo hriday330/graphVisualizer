@@ -39,6 +39,7 @@ function SplitButton({
         {selectedOption ? selectedOption.name : 'Select Algorithm'}
       </Button>
       <Button
+        variant={contained ? 'contained' : 'text'}
         onClick={handleMenuClick}
         className="px-2 py-2 text-blue-500 rounded-r-md shadow-md cursor-pointer focus:outline-none focus:ring focus:ring-blue-300"
       >
