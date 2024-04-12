@@ -1,19 +1,15 @@
 /* eslint-disable react/jsx-props-no-spreading */
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-param-reassign */
-import React, { useState, useEffect, useRef } from 'react';
-import * as d3 from 'd3';
-import {
-  Button, Checkbox, Typography, Dialog, DialogTitle,
-  DialogContent, DialogContentText, DialogActions,
-} from '@mui/material';
+import React, { useState, useCallback, useMemo } from 'react';
+import { Button, Checkbox, Typography } from '@mui/material';
 import { getRandomInt } from '../../util';
 import graphAlgorithms from '../../algorithms/graphAlgorithms';
 import SplitButton from '../SplitButton/SplitButton';
 import Confirm from '../Confirm/Confirm';
+import Svg from '../Svg/Svg';
 
 const INIT_MIN_DIMENSION = 300;
 const INIT_MAX_DIMENSION = 500;
+
 function Graph() {
   const [nodes, setNodes] = useState([]);
   const [links, setLinks] = useState([]);
@@ -41,16 +37,7 @@ function Graph() {
     setOpenClearDialog(false);
   };
 
-  const confirmProps = {
-    handleConfirm: handleConfirmClear,
-    handleCancel: handleCancelClear,
-    openDialog: openClearDialog,
-    dialogTitle: 'Clear Graph?',
-    dialogDesc: 'Are you sure you want to clear the graph?',
-  };
-
-  const svgRef = useRef();
-  const addNode = () => {
+  const addNode = useCallback(() => {
     const newNode = {
       id: nodes.length.toString(),
       x: getRandomInt(INIT_MIN_DIMENSION, INIT_MAX_DIMENSION),
@@ -58,14 +45,14 @@ function Graph() {
     };
     setNodes([...nodes, newNode]);
     setSelectedNode(null);
-  };
+  }, [nodes]);
 
-  const addEdge = (source, target) => {
+  const addEdge = useCallback((source, target) => {
     const newLink = { source, target, visited: false };
     setLinks((prevLinks) => [...prevLinks, newLink]);
-  };
+  }, [links]);
 
-  const handleClearNode = () => {
+  const handleClearNode = useCallback(() => {
     const updatedNodes = nodes.filter((node) => node !== selectedNode);
     const updatedLinks = links.filter((link) => (
       (link.target !== selectedNode) && (link.source !== selectedNode)));
@@ -76,133 +63,57 @@ function Graph() {
       setSelectedEdge(null);
     }
     setSelectedNode(null);
-  };
+  }, [nodes, links, selectedNode, selectedEdge]);
 
-  const handleClearEdge = () => {
+  const handleClearEdge = useCallback(() => {
     const updatedLinks = links.filter((link) => link !== selectedEdge);
     setLinks(updatedLinks);
     setSelectedEdge(null);
-  };
+  }, [links, selectedEdge]);
 
-  const handleNodeClick = (node) => {
+  const handleNodeClick = useCallback((node) => {
     if (selectedNode && node.index !== selectedNode.index) {
       addEdge(selectedNode, node);
       setSelectedNode(null);
     } else {
       setSelectedNode(node === selectedNode ? null : node);
     }
-  };
+  }, [selectedNode]);
 
-  const handleEdgeClick = (event, edge) => {
+  const handleEdgeClick = useCallback((event, edge) => {
     if (!selectedEdge) {
       setSelectedEdge(edge);
     } else {
       setSelectedEdge(null);
     }
-  };
+  }, [selectedEdge]);
 
-  const handleRunAlgorithm = (selectedOption) => {
+  const handleRunAlgorithm = useCallback((selectedOption) => {
     setAlgorithm(selectedOption);
+    // eslint-disable-next-line no-unused-vars
     setVisitedNodes((prevVisited) => new Set()); // clear past execution;
     selectedOption.action(nodes, links, setVisitedNodes, setLinks, directed);
-  };
+  }, [nodes, links, directed]);
 
-  useEffect(() => {
-    const svg = d3.select(svgRef.current);
+  const confirmProps = useMemo(() => ({
+    handleConfirm: handleConfirmClear,
+    handleCancel: handleCancelClear,
+    openDialog: openClearDialog,
+    dialogTitle: 'Clear Graph?',
+    dialogDesc: 'Are you sure you want to clear the graph?',
+  }), [handleConfirmClear, handleCancelClear, openClearDialog]);
 
-    svg.selectAll('*').remove();
+  const svgProps = useMemo(() => ({
+    nodes,
+    links,
+    selectedNode,
+    selectedEdge,
+    visitedNodes,
+    directed,
+    handleNodeClick,
+    handleEdgeClick,
+  }), [nodes, links, selectedNode, selectedEdge, visitedNodes, directed]);
 
-    svg.append('defs').append('marker')
-      .attr('id', 'arrowhead')
-      .attr('viewBox', '-0 -5 10 10')
-      .attr('refX', 15)
-      .attr('refY', 0)
-      .attr('orient', 'auto')
-      .attr('markerWidth', 13)
-      .attr('markerHeight', 13)
-      .attr('xoverflow', 'visible')
-      .append('svg:path')
-      .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
-      .attr('fill', '#999');
-
-    const simulation = d3.forceSimulation(nodes)
-      .force('charge', d3.forceManyBody().strength(-20))
-      .force('link', d3.forceLink(links).distance(50))
-      .on('tick', () => {
-        svg.selectAll('.link')
-          .attr('x1', (d) => d.source.x)
-          .attr('y1', (d) => d.source.y)
-          .attr('x2', (d) => d.target.x)
-          .attr('y2', (d) => d.target.y);
-
-        svg.selectAll('.node')
-          .attr('cx', (d) => d.x)
-          .attr('cy', (d) => d.y);
-
-        svg.selectAll('.node-text')
-          .attr('x', (d) => d.x)
-          .attr('y', (d) => d.y);
-      });
-
-    const drag = d3.drag()
-      .on('start', (event) => {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
-        event.subject.fx = event.subject.x;
-        event.subject.fy = event.subject.y;
-      })
-      .on('drag', (event) => {
-        event.subject.fx = event.x;
-        event.subject.fy = event.y;
-      })
-      .on('end', (event) => {
-        if (!event.active) simulation.alphaTarget(0);
-        event.subject.fx = null;
-        event.subject.fy = null;
-      });
-
-    const linkEnter = svg.selectAll('.link')
-      .data(links)
-      .enter()
-      .append('line')
-      .attr('class', 'link')
-      .attr('stroke', (d) => (d.visited ? 'green' : '#999'))
-      .on('click', (event, d) => handleEdgeClick(event, d))
-      .attr('stroke-opacity', (d) => (d.visited ? 3 : 1.5));
-
-    if (directed) svg.selectAll('.link').attr('marker-end', 'url(#arrowhead)'); // Add arrowhead marker
-    const nodeEnter = svg.selectAll('.node')
-      .data(nodes)
-      .enter()
-      .append('circle')
-      .attr('class', 'node')
-      .attr('r', 15) // TODO: extract into constant
-      .attr('fill', (d) => (visitedNodes.has(d) ? 'green' : 'blue')) // Update fill based on visitedNodes
-      .attr('cursor', 'pointer')
-      .on('click', (event, d) => handleNodeClick(d))
-      .call(drag);
-
-    svg.selectAll('.node-text')
-      .data(nodes)
-      .enter()
-      .append('text')
-      .attr('class', 'node-text')
-      .attr('text-anchor', 'middle')
-      .attr('fill', 'white')
-      .attr('alignment-baseline', 'middle')
-      .text((d) => `${d.index}`);
-    // Handle hover
-    nodeEnter.on('mouseover', function onMouseOver() {
-      d3.select(this).attr('fill', 'red');
-    }).on('mouseout', function onMouseOut() {
-      d3.select(this).attr('fill', (d) => (selectedNode === d ? 'red' : 'blue'));
-    });
-
-    linkEnter.on('mouseover', function onMouseOver() {
-      d3.select(this).attr('stroke', 'red');
-    }).on('mouseout', function onMouseOut() {
-      d3.select(this).attr('stroke', (d) => (selectedEdge === d ? 'red' : '#999'));
-    });
-  }, [nodes, links, selectedNode, selectedEdge, visitedNodes, directed]);
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <div className="h-[70vh] w-full max-w-screen-lg">
@@ -211,7 +122,6 @@ function Graph() {
             onClick={addNode}
             className="shadow-md"
           >
-            {' '}
             Add Node
           </Button>
           <Button variant="contained" disabled={!selectedNode} onClick={handleClearNode}> Delete Node </Button>
@@ -235,9 +145,8 @@ function Graph() {
             DIRECTED
           </Typography>
           <Confirm {...confirmProps} />
-
         </div>
-        <svg ref={svgRef} className="w-full h-full bg-gray-100 rounded-lg border-2 border-solid border-gray-500 " />
+        <Svg {...svgProps} />
       </div>
     </div>
   );
