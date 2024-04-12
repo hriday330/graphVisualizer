@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import PropTypes from 'prop-types';
 
-function GraphRenderer({
+function Svg({
   nodes, links, selectedNode, selectedEdge, visitedNodes, directed,
   handleNodeClick, handleEdgeClick,
 }) {
@@ -116,7 +116,7 @@ function GraphRenderer({
   );
 }
 
-GraphRenderer.propTypes = {
+Svg.propTypes = {
   nodes: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.string.isRequired,
     x: PropTypes.number.isRequired,
@@ -157,4 +157,4 @@ GraphRenderer.propTypes = {
   handleEdgeClick: PropTypes.func.isRequired,
 };
 
-export default GraphRenderer;
+export default Svg;
