@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Menu, MenuItem } from '@mui/material';
+import {
+  Button, Popover, MenuList, MenuItem,
+} from '@mui/material';
 import graphAlgorithms from '../../algorithms/graphAlgorithms';
 
 function SplitButton({
@@ -37,31 +39,37 @@ function SplitButton({
         {selectedOption ? selectedOption.name : 'Select Algorithm'}
       </Button>
       <Button
+        variant={contained ? 'contained' : 'text'}
         onClick={handleMenuClick}
         className="px-2 py-2 text-blue-500 rounded-r-md shadow-md cursor-pointer focus:outline-none focus:ring focus:ring-blue-300"
       >
         ▼
       </Button>
-      <Menu
-        id="split-button-menu"
-        anchorEl={anchorEl}
+      <Popover
         open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
         onClose={handleClose}
-        MenuListProps={{
-          'aria-labelledby': 'split-button',
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
         }}
-        className="w-60 bg-white border border-gray-300 rounded-md shadow-md"
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
       >
-        {options.map((option) => (
-          <MenuItem
-            key={option.id}
-            onClick={() => handleMenuItemClick(option)}
-            className="px-4 py-2 hover:bg-gray-100"
-          >
-            {option.name}
-          </MenuItem>
-        ))}
-      </Menu>
+        <MenuList>
+          {options.map((option) => (
+            <MenuItem
+              key={option.id}
+              onClick={() => handleMenuItemClick(option)}
+              className="px-4 py-2 hover:bg-gray-100"
+            >
+              {option.name}
+            </MenuItem>
+          ))}
+        </MenuList>
+      </Popover>
     </>
   );
 }
@@ -85,4 +93,5 @@ SplitButton.defaultProps = {
   selectedOption: graphAlgorithms[0],
   contained: false,
 };
+
 export default SplitButton;
