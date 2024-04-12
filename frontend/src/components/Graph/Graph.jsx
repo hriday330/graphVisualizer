@@ -46,7 +46,7 @@ function Graph() {
     handleCancel: handleCancelClear,
     openDialog: openClearDialog,
     dialogTitle: 'Clear Graph?',
-    dialogDescr: 'Are you sure you want to clear the graph?',
+    dialogDesc: 'Are you sure you want to clear the graph?',
   };
 
   const svgRef = useRef();
