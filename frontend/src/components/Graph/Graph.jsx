@@ -1,11 +1,12 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-param-reassign */
-import React, { useState, useEffect, useRef } from 'react';
+import React, {
+  useState, useEffect, useRef, useCallback, useMemo,
+} from 'react';
 import * as d3 from 'd3';
 import {
-  Button, Checkbox, Typography, Dialog, DialogTitle,
-  DialogContent, DialogContentText, DialogActions,
+  Button, Checkbox, Typography,
 } from '@mui/material';
 import { getRandomInt } from '../../util';
 import graphAlgorithms from '../../algorithms/graphAlgorithms';
@@ -41,16 +42,16 @@ function Graph() {
     setOpenClearDialog(false);
   };
 
-  const confirmProps = {
+  const confirmProps = useMemo(() => ({
     handleConfirm: handleConfirmClear,
     handleCancel: handleCancelClear,
     openDialog: openClearDialog,
     dialogTitle: 'Clear Graph?',
     dialogDesc: 'Are you sure you want to clear the graph?',
-  };
+  }), [handleConfirmClear, handleCancelClear, openClearDialog]);
 
   const svgRef = useRef();
-  const addNode = () => {
+  const addNode = useCallback(() => {
     const newNode = {
       id: nodes.length.toString(),
       x: getRandomInt(INIT_MIN_DIMENSION, INIT_MAX_DIMENSION),
@@ -58,14 +59,14 @@ function Graph() {
     };
     setNodes([...nodes, newNode]);
     setSelectedNode(null);
-  };
+  }, [nodes]);
 
-  const addEdge = (source, target) => {
+  const addEdge = useCallback((source, target) => {
     const newLink = { source, target, visited: false };
     setLinks((prevLinks) => [...prevLinks, newLink]);
-  };
+  }, [links]);
 
-  const handleClearNode = () => {
+  const handleClearNode = useCallback(() => {
     const updatedNodes = nodes.filter((node) => node !== selectedNode);
     const updatedLinks = links.filter((link) => (
       (link.target !== selectedNode) && (link.source !== selectedNode)));
@@ -76,36 +77,36 @@ function Graph() {
       setSelectedEdge(null);
     }
     setSelectedNode(null);
-  };
+  }, [nodes, links, selectedNode, selectedEdge]);
 
-  const handleClearEdge = () => {
+  const handleClearEdge = useCallback(() => {
     const updatedLinks = links.filter((link) => link !== selectedEdge);
     setLinks(updatedLinks);
     setSelectedEdge(null);
-  };
+  }, [links, selectedEdge]);
 
-  const handleNodeClick = (node) => {
+  const handleNodeClick = useCallback((node) => {
     if (selectedNode && node.index !== selectedNode.index) {
       addEdge(selectedNode, node);
       setSelectedNode(null);
     } else {
       setSelectedNode(node === selectedNode ? null : node);
     }
-  };
+  }, [selectedNode]);
 
-  const handleEdgeClick = (event, edge) => {
+  const handleEdgeClick = useCallback((event, edge) => {
     if (!selectedEdge) {
       setSelectedEdge(edge);
     } else {
       setSelectedEdge(null);
     }
-  };
+  }, [selectedEdge]);
 
-  const handleRunAlgorithm = (selectedOption) => {
+  const handleRunAlgorithm = useCallback((selectedOption) => {
     setAlgorithm(selectedOption);
     setVisitedNodes((prevVisited) => new Set()); // clear past execution;
     selectedOption.action(nodes, links, setVisitedNodes, setLinks, directed);
-  };
+  }, [nodes, links, directed]);
 
   useEffect(() => {
     const svg = d3.select(svgRef.current);
