@@ -1,6 +1,8 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { useState, useCallback, useMemo } from 'react';
-import { Button, Checkbox, Typography } from '@mui/material';
+import {
+  Button, Checkbox, Typography, Stack,
+} from '@mui/material';
 import { getRandomInt } from '../../util';
 import graphAlgorithms from '../../algorithms/graphAlgorithms';
 import SplitButton from '../SplitButton/SplitButton';
@@ -117,33 +119,35 @@ function Graph() {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <div className="h-[70vh] w-full max-w-screen-lg">
-        <div className="flex justify-center mb-4">
-          <Button
-            onClick={addNode}
-            className="shadow-md"
-          >
-            Add Node
-          </Button>
-          <Button variant="contained" disabled={!selectedNode} onClick={handleClearNode}> Delete Node </Button>
-          <Button onClick={handleClearEdge} disabled={!selectedEdge} className="shadow-md"> Delete Edge </Button>
-          <Button variant="contained" onClick={handleClear}> Clear</Button>
-          <SplitButton
-            selectedOption={algorithm}
-            options={graphAlgorithms}
-            onClick={handleRunAlgorithm}
-            contained
-          />
-          <Typography
-            sx={{ fontSize: '14px' }}
-            className="px-4 py-2 text-white bg-gray-400 rounded-l-md shadow-md cursor-pointer focus:outline-none focus:ring focus:ring-blue-300"
-          >
-            <Checkbox
-              checked={directed}
-              onChange={(e) => setDirected(e.target.checked)}
-              color="default"
+        <div className="ml-1 mr-1 mb-4">
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} justifyContent="center">
+            <Button
+              onClick={addNode}
+              className="shadow-md"
+            >
+              Add Node
+            </Button>
+            <Button variant="contained" disabled={!selectedNode} onClick={handleClearNode}> Delete Node </Button>
+            <Button onClick={handleClearEdge} disabled={!selectedEdge} className="shadow-md"> Delete Edge </Button>
+            <Button variant="contained" onClick={handleClear}> Clear</Button>
+            <SplitButton
+              selectedOption={algorithm}
+              options={graphAlgorithms}
+              onClick={handleRunAlgorithm}
+              contained
             />
-            DIRECTED
-          </Typography>
+            <Typography
+              sx={{ fontSize: '14px' }}
+              className="px-4 py-2 text-white bg-gray-400 rounded-l-md shadow-md cursor-pointer focus:outline-none focus:ring focus:ring-blue-300"
+            >
+              <Checkbox
+                checked={directed}
+                onChange={(e) => setDirected(e.target.checked)}
+                color="default"
+              />
+              DIRECTED
+            </Typography>
+          </Stack>
           <Confirm {...confirmProps} />
         </div>
         <Svg {...svgProps} />
