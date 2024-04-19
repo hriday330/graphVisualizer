@@ -16,11 +16,10 @@ function Login() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Handle login or registration logic here based on isLoginMode
     if (isLoginMode) {
-      // Handle login
+      // TODO: Handle login
     } else {
-      // Handle registration
+      // TODO: Handle registration
     }
   };
 
