@@ -28,12 +28,12 @@ const authController = {
     try {
       const user = await User.findByEmail(email);
       if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+        return res.status(404).json({ message: 'User not found, register?' });
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+        return res.status(401).json({ message: 'Wrong password' });
       }
 
       const token = jwt.sign({ userId: user.id }, 'secret', { expiresIn: '1h' });

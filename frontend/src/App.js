@@ -15,12 +15,7 @@ function App() {
         <Route
           path="/"
           element={(
-            <Graph
-              initialNodes={[{ x: 400, y: 300 }]}
-              initialLinks={[]}
-              width={1500}
-              height={800}
-            />
+            <Graph />
           )}
         />
         <Route

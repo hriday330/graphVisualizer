@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const authRoutes = require('./routes/authRoutes');
 const graphRoutes = require('./routes/graphRoutes');
 const pool = require('./config/database');
+const setupSchema = require('./config/schemaSetup');
 
 const app = express();
 
@@ -13,6 +14,10 @@ app.use('/api/graph', graphRoutes);
 
 app.set('pool', pool);
 
-app.listen(4000, () => {
-  console.log('Server is running on port 4000');
-});
+setupSchema().then(
+  () => {
+    app.listen(4000, () => {
+      console.log('Server is running on port 4000');
+    });
+  }
+)
