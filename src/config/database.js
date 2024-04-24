@@ -7,7 +7,7 @@ const pool = mysql.createPool({
   database: 'graphAlive',
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 10,
 });
 
 pool.getConnection((err, connection) => {

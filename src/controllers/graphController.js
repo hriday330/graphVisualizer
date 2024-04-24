@@ -2,10 +2,9 @@ const GraphState = require('../models/graphState');
 
 const graphController = {
   async save(req, res) {
-    const { userId, nodes, links } = req.body;
-    
+    const {userId, graphName, nodes, links } = req.body;
     try {
-      await GraphState.create(userId, nodes, links);
+      await GraphState.create(userId, graphName, nodes, links);
       res.status(201).json({ message: 'Graph state saved successfully' });
     } catch (error) {
       console.error('Error saving graph state:', error);
@@ -14,8 +13,8 @@ const graphController = {
   },
 
   async getByUserId(req, res) {
-    const userId = req.params.id;
-
+    const userId = req.params.userId;
+    console.log(userId)
     try {
       const graphStates = await GraphState.findByUserId(userId);
       res.status(200).json(graphStates);

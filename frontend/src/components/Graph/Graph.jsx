@@ -1,5 +1,8 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useState, useCallback, useMemo } from 'react';
+import React, {
+  useState, useCallback, useMemo, useEffect,
+} from 'react';
 import {
   Button, Checkbox, Typography, Stack,
 } from '@mui/material';
@@ -11,6 +14,35 @@ import Svg from '../Svg/Svg';
 
 const INIT_MIN_DIMENSION = 300;
 const INIT_MAX_DIMENSION = 500;
+
+const initialNodes = [
+  {
+    id: '0',
+    x: 571.5972318858502,
+    y: 414.01969103377326,
+    index: 0,
+    vy: -0.000008965594349428255,
+    vx: -0.000013491684398204733,
+    fx: null,
+    fy: null,
+  },
+  {
+    id: '1',
+    x: 529.2813014391375,
+    y: 385.89959455758145,
+    index: 1,
+    vy: 0.000008965594349428255,
+    vx: 0.000013491684398204733,
+    fx: null,
+    fy: null,
+  },
+];
+
+const initialEdges = [{
+  source: initialNodes[0],
+  target: initialNodes[1],
+  visited: false,
+}];
 
 function Graph() {
   const [nodes, setNodes] = useState([]);
@@ -97,6 +129,14 @@ function Graph() {
     selectedOption.action(nodes, links, setVisitedNodes, setLinks, directed);
   }, [nodes, links, directed]);
 
+  // This is a mock for loading graph
+  const initGraph = useCallback(() => {
+    setTimeout(() => {
+      setNodes(initialNodes);
+      setLinks(initialEdges);
+    }, 500);
+  }, [initialNodes, initialEdges]);
+
   const confirmProps = useMemo(() => ({
     handleConfirm: handleConfirmClear,
     handleCancel: handleCancelClear,
@@ -108,13 +148,16 @@ function Graph() {
   const svgProps = useMemo(() => ({
     nodes,
     links,
+    initialNodes,
+    initialEdges,
     selectedNode,
     selectedEdge,
     visitedNodes,
     directed,
     handleNodeClick,
     handleEdgeClick,
-  }), [nodes, links, selectedNode, selectedEdge, visitedNodes, directed]);
+  }), [nodes, links, selectedNode, selectedEdge, visitedNodes,
+    directed, initialNodes, initialEdges]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
@@ -136,6 +179,7 @@ function Graph() {
               onClick={handleRunAlgorithm}
               contained
             />
+            <Button onClick={initGraph} className="shadow-md"> Load saved graph </Button>
             <Typography
               sx={{ fontSize: '14px' }}
               className="px-4 py-2 text-white bg-gray-400 rounded-l-md shadow-md cursor-pointer focus:outline-none focus:ring focus:ring-blue-300"

@@ -3,6 +3,6 @@ const router = express.Router();
 const graphController = require('../controllers/graphController');
 
 router.post('/', graphController.save);
-router.get('/:id', graphController.getByUserId);
+router.get('/:userId', graphController.getByUserId);
 
 module.exports = router;
