@@ -32,24 +32,27 @@ const authController = {
 
   async login(req, res) {
     const { email, password } = req.body;
-
     try {
-      const user = await User.findByEmail(email);
-      if (!user) {
-        return res.status(404).json({ message: 'User not found, register?' });
-      }
+        const user = await User.findByEmail(email);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found, register?' });
+        }
 
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        return res.status(401).json({ message: 'Wrong password' });
-      }
-      const token = jwt.sign({ userId: user.id}, 'secret', { expiresIn: '1h' });
-      res.status(200).json({ token });
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: 'Wrong password' });
+        }
+
+        req.session.userId = user.id;
+        console.log(req.session.userId)
+
+        res.status(200).json({ message: 'Logged in successfully' });
     } catch (error) {
-      console.error('Error logging in:', error);
-      res.status(500).json({ message: 'Internal server error' });
+        console.error('Error logging in:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
-  }
+}
+
 };
 
 module.exports = authController
