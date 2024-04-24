@@ -1,24 +1,32 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const validator = require('validator')
 
 const authController = {
   async register(req, res) {
     const { email, password } = req.body;
-    
     try {
       const existingUser = await User.findByEmail(email);
       if (existingUser) {
         return res.status(400).json({ message: 'User already exists' });
       }
-  
+
+      if (!validator.isEmail(email)) {
+        return res.status(400).json({ message: 'Invalid email, please try again'});
+      }
+      
+      if (!validator.isStrongPassword(password)) {
+        return res.status(400).json({ message: 'Password must contain be at least 8 characters long and contain at least one lowercase, uppercase, symbol and number'});
+      }
+
       const hashedPassword = await bcrypt.hash(password, 12);
       await User.create(email, hashedPassword);
   
       res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
       console.error('Error registering user:', error);
-      res.status(500).json({ message: 'Internal server error' });
+      res.status(500).json({ message: 'Error registering user, please try again shortly' });
     }
   },
 
@@ -35,8 +43,7 @@ const authController = {
       if (!isPasswordValid) {
         return res.status(401).json({ message: 'Wrong password' });
       }
-
-      const token = jwt.sign({ userId: user.id }, 'secret', { expiresIn: '1h' });
+      const token = jwt.sign({ userId: user.id}, 'secret', { expiresIn: '1h' });
       res.status(200).json({ token });
     } catch (error) {
       console.error('Error logging in:', error);
@@ -45,4 +52,4 @@ const authController = {
   }
 };
 
-module.exports = authController;
+module.exports = authController

@@ -7,7 +7,6 @@ const User = {
   async findByEmail(email) {
     try {
       const rows = await execute('SELECT * FROM users WHERE email = ?', [email]);
-      console.log(rows)
       return (rows ?? []).length > 0 ? rows[0] : null; // Return the first row or null
     } catch (error) {
       console.error('Error finding user by email:', error);
@@ -17,7 +16,7 @@ const User = {
 
   async create(email, password) {
     try {
-      await pool.execute('INSERT INTO users (email, password) VALUES (?, ?)', [email, password]);
+      await execute('INSERT INTO users (email, password) VALUES (?, ?)', [email, password]);
       return true; // Return true to indicate successful creation
     } catch (error) {
       console.error('Error creating user:', error);

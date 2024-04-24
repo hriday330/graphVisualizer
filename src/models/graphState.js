@@ -8,9 +8,8 @@ const GraphState = {
     try {
       //const connection = await pool.getConnection()
       await execute('INSERT INTO graph_states (user_id, graph_name, nodes, links) VALUES (?, ?, ?, ?)', [userId, graphName, JSON.stringify(nodes), JSON.stringify(links)]);
-      console.log('done')
-    } catch(e) {
-      console.log(e)
+    } catch(err) {
+      console.log(err)
     }
   },
 
