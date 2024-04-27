@@ -17,6 +17,13 @@
   },
   "homepage": "https://github.com/hriday330/graphVisualizer#readme",
   "dependencies": {
-    "@mui/styles": "^5.15.15"
+    "@mui/styles": "^5.15.15",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.9.6",
+    "validator": "^13.11.0"
   }
 }
