@@ -1,5 +1,4 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const validator = require('validator')
 
@@ -51,8 +50,23 @@ const authController = {
         console.error('Error logging in:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
-}
+  },
+  
+  async logout(req, res) {
+    try {
+      req.session.destroy(err => {
+        if (err) {
+          console.error('Error logging out:', err);
+          return res.status(500).json({ message: 'Error logging out, please try again shortly' });
+        }
 
+        res.status(200).json({ message: 'Logged out successfully' });
+      });
+    } catch (error) {
+      console.error('Error logging out:', error);
+      res.status(500).json({ message: 'Error logging out, please try again shortly' });
+    }
+  }
 };
 
 module.exports = authController
