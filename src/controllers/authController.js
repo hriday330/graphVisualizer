@@ -44,8 +44,7 @@ const authController = {
 
         req.session.userId = user.id;
         console.log(req.session.userId)
-
-        res.status(200).json({ message: 'Logged in successfully' });
+        res.status(200).json({ message: 'Logged in successfully', userId: user.id });
     } catch (error) {
         console.error('Error logging in:', error);
         res.status(500).json({ message: 'Internal server error' });

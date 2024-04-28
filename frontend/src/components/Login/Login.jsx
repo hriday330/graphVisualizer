@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   Stack, TextField, Button, Typography,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { login, register } from '../../api/authApi';
 
 const textFieldStyles = {
@@ -13,6 +14,7 @@ const buttonStyles = {
 };
 
 function Login() {
+  const navigate = useNavigate();
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,21 +32,24 @@ function Login() {
     try {
       if (isLoginMode) {
         const loginResponse = await login(email, password);
-        if (loginResponse.success) {
-          console.log('login successful');
-        } else {
-          console.log(loginResponse.message || 'Login failed');
+        console.log(loginResponse);
+        if (loginResponse.ok) {
+          navigate('/');
+          return null;
         }
-      } else {
-        const registerResponse = await register(email, password);
-        if (registerResponse.success) {
-          console.log('registration successful');
-        } else {
-          console.log(registerResponse.message || 'Registration failed');
-        }
+        console.log(loginResponse.message || 'Login failed');
+        return null;
       }
+      const registerResponse = await register(email, password);
+      if (registerResponse.ok) {
+        console.log('registration successful');
+        return null;
+      }
+      console.log(registerResponse.message || 'Registration failed');
+      return null;
     } catch (error) { // some other error
       console.log(error);
+      return null;
     }
   };
 
