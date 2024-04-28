@@ -5,9 +5,10 @@ const graphRoutes = require('./routes/graphRoutes');
 const pool = require('./config/database');
 const session = require('express-session')
 const setupSchema = require('./config/schemaSetup');
-
+const cors = require('cors');
 const app = express();
 
+app.use(cors());
 app.use(bodyParser.json());
 
 app.use(session({
