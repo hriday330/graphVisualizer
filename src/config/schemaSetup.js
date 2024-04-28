@@ -16,10 +16,11 @@ async function setupSchema() {
     await query(`
         CREATE TABLE IF NOT EXISTS graph_states (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            user_id INT,
-            graph_name VARCHAR(255), 
+            user_id INT NOT NULL,
+            graph_name VARCHAR(255) NOT NULL UNIQUE, 
             nodes JSON,
             links JSON,
+            directed BOOL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id)
         )

@@ -2,10 +2,16 @@ const GraphState = require('../models/graphState');
 
 const graphController = {
   async save(req, res) {
-    const {userId, graphName, nodes, links } = req.body;
+    const {userId, graphName, nodes, links, directed} = req.body;
     try {
-      await GraphState.create(userId, graphName, nodes, links);
-      res.status(201).json({ message: 'Graph state saved successfully' });
+      const existingGraphWithName = await GraphState.findByName(graphName);
+      if (existingGraphWithName) {
+        await GraphState.update(graphName, nodes, links, directed);
+        res.status(201).json({ message: 'Graph state saved successfully' });
+      } else {
+        await GraphState.create(userId, graphName, nodes, links, directed);
+        res.status(201).json({ message: 'Graph state saved successfully' });
+      }
     } catch (error) {
       console.error('Error saving graph state:', error);
       res.status(500).json({ message: 'Internal server error' });
