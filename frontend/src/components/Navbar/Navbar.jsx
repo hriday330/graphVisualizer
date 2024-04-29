@@ -6,6 +6,9 @@ import {
   useMediaQuery, useTheme,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import { useUser, useUserDispatch } from '../../contexts/UserContext';
+import { logoutAction } from '../../actions/userActions';
+import { logout } from '../../api/authApi';
 
 const appBarStyles = {
   backgroundColor: '#374151',
@@ -27,7 +30,8 @@ function Navbar() {
   const [open, setOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
+  const { id: userId } = useUser();
+  const dispatch = useUserDispatch();
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -36,6 +40,10 @@ function Navbar() {
     setOpen(false);
   };
 
+  const handleLogout = async () => {
+    await logout();
+    dispatch(logoutAction());
+  };
   return (
     <div>
       <AppBar position="sticky" sx={appBarStyles}>
@@ -57,7 +65,14 @@ function Navbar() {
                 <Link to="/about"> About</Link>
               </Button>
               <Button color="inherit">
-                <Link to="/login"> Login </Link>
+                <Link
+                  to="/login"
+                  onClick={userId ? handleLogout : null}
+                >
+                  {' '}
+                  {userId ? 'Logout' : 'Login'}
+                  {' '}
+                </Link>
               </Button>
 
             </div>
@@ -86,8 +101,8 @@ function Navbar() {
             </ListItemButton>
             <ListItemButton onClick={handleDrawerClose}>
               <ListItemIcon />
-              <ListItemText primary="Login" sx={listItemTextStyles}>
-                <Link to="/" />
+              <ListItemText primary={userId ? 'Logout' : 'Login'} sx={listItemTextStyles}>
+                <Link to="/login" />
               </ListItemText>
             </ListItemButton>
           </List>

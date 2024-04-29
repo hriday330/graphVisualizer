@@ -4,6 +4,8 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { login, register } from '../../api/authApi';
+import { useUserDispatch } from '../../contexts/UserContext';
+import { setUserId } from '../../actions/userActions';
 
 const textFieldStyles = {
   marginBottom: '16px',
@@ -14,10 +16,11 @@ const buttonStyles = {
 };
 
 function Login() {
-  const navigate = useNavigate();
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const dispatch = useUserDispatch();
+  const navigate = useNavigate();
 
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
@@ -32,8 +35,8 @@ function Login() {
     try {
       if (isLoginMode) {
         const loginResponse = await login(email, password);
-        console.log(loginResponse);
         if (loginResponse.ok) {
+          dispatch(setUserId(loginResponse.data.userId));
           navigate('/');
           return null;
         }
