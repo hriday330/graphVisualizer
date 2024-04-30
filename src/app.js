@@ -8,7 +8,12 @@ const setupSchema = require('./config/schemaSetup');
 const cors = require('cors');
 const app = express();
 
-app.use(cors());
+const allowedOrigin = 'http://localhost:3000'
+
+app.use(cors({
+  origin: allowedOrigin, // Allow requests from the specified origin
+  credentials: true, // Allow credentials (cookies) to be included in requests
+}));
 app.use(bodyParser.json());
 
 app.use(session({

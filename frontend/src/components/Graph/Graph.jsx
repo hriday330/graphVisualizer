@@ -11,6 +11,10 @@ import graphAlgorithms from '../../algorithms/graphAlgorithms';
 import SplitButton from '../SplitButton/SplitButton';
 import Confirm from '../Confirm/Confirm';
 import Svg from '../Svg/Svg';
+import { useUser, useUserDispatch } from '../../contexts/UserContext';
+import Modal from '../Modal/Modal';
+import { getGraphStatesByUserId, saveGraphState } from '../../api/graphApi';
+import { setGraphs } from '../../actions/graphActions';
 
 const INIT_MIN_DIMENSION = 300;
 const INIT_MAX_DIMENSION = 500;
@@ -53,6 +57,9 @@ function Graph() {
   const [visitedNodes, setVisitedNodes] = useState(new Set());
   const [directed, setDirected] = useState(true);
   const [openClearDialog, setOpenClearDialog] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const { id: userId, graphs } = useUser();
+  const dispatch = useUserDispatch();
 
   const handleClear = () => {
     setOpenClearDialog(true);
@@ -69,6 +76,10 @@ function Graph() {
 
   const handleCancelClear = () => {
     setOpenClearDialog(false);
+  };
+
+  const toggleOpenModal = () => {
+    setOpenModal(!openModal);
   };
 
   const addNode = useCallback(() => {
@@ -137,6 +148,18 @@ function Graph() {
     }, 500);
   }, [initialNodes, initialEdges]);
 
+  const saveGraph = useCallback(async () => {
+    const currentGraph = {
+      userId,
+      graphName: 'random',
+      nodes,
+      links,
+      directed,
+    };
+
+    await saveGraphState(currentGraph);
+    dispatch(setGraphs([...graphs, currentGraph]));
+  }, [graphs, nodes, links, directed, userId, dispatch]);
   const confirmProps = useMemo(() => ({
     handleConfirm: handleConfirmClear,
     handleCancel: handleCancelClear,
@@ -158,10 +181,17 @@ function Graph() {
     handleEdgeClick,
   }), [nodes, links, selectedNode, selectedEdge, visitedNodes,
     directed, initialNodes, initialEdges]);
-
+  const updateGraphContext = async () => {
+    const userGraphs = await getGraphStatesByUserId(userId);
+    dispatch(setGraphs(userGraphs));
+  };
+  useEffect(() => {
+    console.log(userId);
+    if (userId) updateGraphContext();
+  }, [userId]);
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <div className="h-[70vh] w-full max-w-screen-lg">
+      <div className="h-[70vh] w-full">
         <div className="ml-1 mr-1 mb-4">
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} justifyContent="center">
             <Button
@@ -179,7 +209,8 @@ function Graph() {
               onClick={handleRunAlgorithm}
               contained
             />
-            <Button onClick={initGraph} className="shadow-md"> Load saved graph </Button>
+            <Button onClick={() => toggleOpenModal()} className="shadow-md"> Load graph </Button>
+            <Button variant="contained" onClick={() => saveGraph()} className="shadow-md"> Save graph </Button>
             <Typography
               sx={{ fontSize: '14px' }}
               className="px-4 py-2 text-white bg-gray-400 rounded-l-md shadow-md cursor-pointer focus:outline-none focus:ring focus:ring-blue-300"
@@ -192,6 +223,7 @@ function Graph() {
               DIRECTED
             </Typography>
           </Stack>
+          <Modal isOpen={openModal} onClose={toggleOpenModal} graphs={graphs} />
           <Confirm {...confirmProps} />
         </div>
         <Svg {...svgProps} />
